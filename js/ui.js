@@ -26,7 +26,7 @@ export function renderDate(element) {
   element.textContent = getLocalDate();
 }
 
-export function renderCurrentWeather(element, city, unit) {
+export function renderCurrentWeather(element, city, unit, isFavorite, onToggleFavorite) {
   const localTime = city.time?.split("T").at(-1) ?? "Unavailable";
   const meta = createElement("div", "current-meta");
   const location = createElement("div");
@@ -38,7 +38,12 @@ export function renderCurrentWeather(element, city, unit) {
   const icon = createElement("span", "current-icon", city.icon);
   icon.setAttribute("role", "img");
   icon.setAttribute("aria-label", city.condition);
-  meta.append(location, icon);
+  const favoriteButton = createElement("button", "favorite-toggle", isFavorite ? "★" : "☆");
+  favoriteButton.type = "button";
+  favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+  favoriteButton.setAttribute("aria-label", `${isFavorite ? "Remove" : "Add"} ${city.name} ${isFavorite ? "from" : "to"} favourites`);
+  favoriteButton.addEventListener("click", onToggleFavorite);
+  meta.append(location, icon, favoriteButton);
 
   const temperatureLine = createElement("div", "temperature-line");
   temperatureLine.append(
@@ -63,6 +68,7 @@ export function renderCurrentWeather(element, city, unit) {
   const card = document.createDocumentFragment();
   card.append(meta, temperatureLine, createElement("p", "condition", city.condition), details);
   element.replaceChildren(card);
+  element.setAttribute("aria-busy", "false");
 }
 
 export function renderForecast(element, forecast, unit) {
@@ -87,7 +93,10 @@ export function renderFavourites(element, favourites, selectedCity, unit, onSele
   const items = favourites.map((city) => {
     const item = createElement("li");
     const button = createElement("button", "favourite-link");
-    const isSelected = city.name.toLocaleLowerCase() === selectedCity?.name?.toLocaleLowerCase();
+    const isSelected = city.name.toLocaleLowerCase() === selectedCity?.name?.toLocaleLowerCase()
+      && city.country === selectedCity?.country
+      && city.latitude === selectedCity?.latitude
+      && city.longitude === selectedCity?.longitude;
     button.type = "button";
     button.setAttribute("aria-current", String(isSelected));
     button.setAttribute("aria-label", `Show weather for ${city.name}`);
@@ -107,11 +116,46 @@ export function renderFavourites(element, favourites, selectedCity, unit, onSele
         ? `${formatTemperature(selectedCity.temperature, unit)}° ${unit}`
         : "→"),
     );
-    button.addEventListener("click", () => onSelect(city.name));
+    button.addEventListener("click", () => onSelect(city));
     item.append(button);
     return item;
   });
   element.replaceChildren(...items);
+}
+
+export function renderSkeleton(currentElement, forecastElement) {
+  const meta = createElement("div", "current-meta");
+  const location = createElement("div");
+  location.append(
+    createElement("div", "location-label", "CURRENT WEATHER"),
+    createElement("div", "weather-skeleton skeleton-location"),
+    createElement("div", "weather-skeleton skeleton-line"),
+  );
+  const icon = createElement("span", "weather-skeleton");
+  icon.style.width = "48px";
+  icon.style.height = "48px";
+  icon.setAttribute("aria-hidden", "true");
+  meta.append(location, icon);
+
+  const detailLine = createElement("div", "weather-details");
+  detailLine.append(
+    createElement("div", "weather-skeleton skeleton-detail"),
+    createElement("div", "weather-skeleton skeleton-detail"),
+  );
+  currentElement.replaceChildren(
+    meta,
+    createElement("div", "weather-skeleton skeleton-temperature"),
+    createElement("div", "weather-skeleton skeleton-condition"),
+    detailLine,
+  );
+  currentElement.setAttribute("aria-busy", "true");
+
+  const cards = Array.from({ length: 7 }, () => {
+    const card = createElement("div", "forecast-card forecast-skeleton");
+    card.setAttribute("aria-hidden", "true");
+    return card;
+  });
+  forecastElement.replaceChildren(...cards);
 }
 
 export function renderCityChoices(element, cities, onSelect) {

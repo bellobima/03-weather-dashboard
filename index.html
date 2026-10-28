@@ -27,6 +27,7 @@
         </form>
         <div class="topbar-tools">
           <div class="topbar-note"><span class="live-dot" aria-hidden="true"></span> Your daily forecast</div>
+          <button class="location-button" id="location-button" type="button">⌖ <span>Use my location</span></button>
           <button class="unit-toggle" id="unit-toggle" type="button" aria-label="Switch to Fahrenheit">°C</button>
         </div>
       </header>
@@ -44,7 +45,7 @@
         <section class="weather-column" aria-label="Weather forecast">
           <div class="status-message" id="status-message" role="status" aria-live="polite"></div>
           <div class="status-message status-error" id="error-message" role="alert" hidden></div>
-          <article class="current-card glass-card" id="current-weather" aria-label="Current weather"></article>
+          <article class="current-card glass-card" id="current-weather" aria-label="Current weather" aria-busy="true"></article>
           <section class="forecast-section" aria-labelledby="forecast-heading">
             <div class="section-heading">
               <div>
