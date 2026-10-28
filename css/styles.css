@@ -89,6 +89,7 @@ button { color: inherit; }
   transition: filter 160ms ease, transform 160ms ease;
 }
 .search-form button:hover { filter: brightness(1.07); transform: translateY(-1px); }
+.search-form button:disabled { cursor: wait; filter: saturate(.7); opacity: .75; }
 .search-form button:focus-visible, .favourite-link:focus-visible, .brand:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;

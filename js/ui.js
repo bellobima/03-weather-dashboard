@@ -21,12 +21,13 @@ export function renderDate(element) {
 }
 
 export function renderCurrentWeather(element, city) {
+  const localTime = city.time?.split("T").at(-1) ?? "Unavailable";
   element.innerHTML = `
     <div class="current-meta">
       <div>
-        <div class="location-label">CURRENT WEATHER · ${escapeHtml(city.countryCode)}</div>
+        <div class="location-label">CURRENT WEATHER</div>
         <h2 class="current-location">${escapeHtml(city.name)}, ${escapeHtml(city.country)}</h2>
-        <div class="local-time">Local time · ${escapeHtml(city.time)}</div>
+        <div class="local-time">Local time · ${escapeHtml(localTime)}</div>
       </div>
       <span class="current-icon" role="img" aria-label="${escapeHtml(city.condition)}">${escapeHtml(city.icon)}</span>
     </div>
@@ -37,7 +38,7 @@ export function renderCurrentWeather(element, city) {
     <p class="condition">${escapeHtml(city.condition)}</p>
     <div class="weather-details">
       <div class="detail-item"><span class="detail-icon" aria-hidden="true">↗</span><span>Wind</span><strong>${escapeHtml(city.wind)} km/h</strong></div>
-      <div class="detail-item"><span class="detail-icon" aria-hidden="true">◷</span><span>Feels like</span><strong>${escapeHtml(city.temperature)}°</strong></div>
+      <div class="detail-item"><span class="detail-icon" aria-hidden="true">◷</span><span>Humidity</span><strong>${escapeHtml(city.humidity)}%</strong></div>
     </div>
   `;
 }
@@ -58,24 +59,25 @@ export function renderForecast(element, forecast) {
 export function renderFavourites(element, favourites, selectedCity, onSelect) {
   element.replaceChildren();
 
-  favourites.forEach((city) => {
+  favourites.forEach((name) => {
     const item = document.createElement("li");
     const button = document.createElement("button");
     button.className = "favourite-link";
     button.type = "button";
-    button.setAttribute("aria-current", String(city.name === selectedCity.name));
-    button.setAttribute("aria-label", `Show weather for ${city.name}`);
+    const isSelected = name.toLocaleLowerCase() === selectedCity.name?.toLocaleLowerCase();
+    button.setAttribute("aria-current", String(isSelected));
+    button.setAttribute("aria-label", `Show weather for ${name}`);
     button.innerHTML = `
       <span class="favourite-city">
-        <span class="favourite-icon" aria-hidden="true">${escapeHtml(city.icon)}</span>
+        <span class="favourite-icon" aria-hidden="true">${isSelected ? escapeHtml(selectedCity.icon) : "📍"}</span>
         <span>
-          <span class="favourite-name">${escapeHtml(city.name)}</span>
-          <span class="favourite-condition">${escapeHtml(city.condition)}</span>
+          <span class="favourite-name">${escapeHtml(name)}</span>
+          <span class="favourite-condition">${isSelected ? escapeHtml(selectedCity.condition) : "View forecast"}</span>
         </span>
       </span>
-      <span class="favourite-temperature">${escapeHtml(city.temperature)}° <span>C</span></span>
+      <span class="favourite-temperature">${isSelected ? `${escapeHtml(selectedCity.temperature)}° <span>C</span>` : "→"}</span>
     `;
-    button.addEventListener("click", () => onSelect(city));
+    button.addEventListener("click", () => onSelect(name));
     item.append(button);
     element.append(item);
   });
