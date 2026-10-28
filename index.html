@@ -25,8 +25,12 @@
           <input id="city-search" name="city" type="search" placeholder="Search a city..." autocomplete="off">
           <button type="submit">Search</button>
         </form>
-        <div class="topbar-note"><span class="live-dot" aria-hidden="true"></span> Your daily forecast</div>
+        <div class="topbar-tools">
+          <div class="topbar-note"><span class="live-dot" aria-hidden="true"></span> Your daily forecast</div>
+          <button class="unit-toggle" id="unit-toggle" type="button" aria-label="Switch to Fahrenheit">°C</button>
+        </div>
       </header>
+      <ul class="city-choices" id="city-choices" aria-label="Choose a city" hidden></ul>
 
       <div class="page-heading">
         <div>

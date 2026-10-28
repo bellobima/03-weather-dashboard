@@ -1,11 +1,14 @@
 const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 
-export async function fetchJson(url) {
+export async function fetchJson(url, { signal } = {}) {
   let response;
   try {
-    response = await fetch(url);
+    response = await fetch(url, { signal });
   } catch (error) {
+    if (error.name === "AbortError") {
+      throw error;
+    }
     throw new Error(`Could not connect to Open-Meteo: ${error.message}`);
   }
 
@@ -16,11 +19,14 @@ export async function fetchJson(url) {
   try {
     return await response.json();
   } catch (error) {
+    if (error.name === "AbortError") {
+      throw error;
+    }
     throw new Error(`Open-Meteo returned an invalid response: ${error.message}`);
   }
 }
 
-export async function searchCity(name) {
+export async function searchCity(name, { signal } = {}) {
   const query = name.trim();
   if (!query) {
     throw new Error("Enter a city name to search.");
@@ -28,20 +34,31 @@ export async function searchCity(name) {
 
   const url = `${GEOCODING_URL}?name=${encodeURIComponent(query)}&count=5`;
   try {
-    const data = await fetchJson(url);
-    return (data.results ?? []).map(({ name: cityName, country, latitude, longitude, timezone }) => ({
+    const data = await fetchJson(url, { signal });
+    return (data.results ?? []).map(({
       name: cityName,
       country,
+      admin1,
+      latitude,
+      longitude,
+      timezone,
+    }) => ({
+      name: cityName,
+      country,
+      admin1,
       latitude,
       longitude,
       timezone,
     }));
   } catch (error) {
+    if (error.name === "AbortError") {
+      throw error;
+    }
     throw new Error(`Unable to search for "${query}": ${error.message}`);
   }
 }
 
-export async function getForecast(latitude, longitude) {
+export async function getForecast(latitude, longitude, { signal } = {}) {
   const params = new URLSearchParams({
     latitude: String(latitude),
     longitude: String(longitude),
@@ -51,8 +68,11 @@ export async function getForecast(latitude, longitude) {
   });
 
   try {
-    return await fetchJson(`${FORECAST_URL}?${params}`);
+    return await fetchJson(`${FORECAST_URL}?${params}`, { signal });
   } catch (error) {
+    if (error.name === "AbortError") {
+      throw error;
+    }
     throw new Error(`Unable to load the forecast: ${error.message}`);
   }
 }
